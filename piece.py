@@ -20,7 +20,12 @@ class Piece:
         return self.ref.y, self.ref.y
 
     def move_piece(self, cords, screen, board):
-        board.get_at_cords(self.get_cords()).contains = False
+        old = board.get_at_cords(self.get_cords())
+        old.contains = False
+        old.contained_piece = None
+        if board.get_at_cords(cords).contains:
+            pygame.draw.rect(screen, screen.get_at((cords[0], cords[1])),
+                             pygame.Rect(cords[0], cords[1], 60, 60))
         temp = screen.blit(self.img, cords)
         pygame.draw.rect(screen, screen.get_at((self.ref.x, self.ref.y)),
                          pygame.Rect(self.ref.x, self.ref.y, 60, 60))
@@ -28,7 +33,9 @@ class Piece:
         pygame.display.flip()
         if not self.moved:
             self.moved = True
-        board.get_at_cords(cords).contains = True
+        square = board.get_at_cords(cords)
+        square.contains = True
+        square.contained_piece = self
         return
 
     def get_legal_moves(self, board):
@@ -42,11 +49,11 @@ class Pawn(Piece):
         self.points = 1
 
     def move_piece(self, cords, screen, board):
+        super().move_piece(cords, screen, board)
         if self.en_passantable:
             self.en_passantable = False
-        if not self.en_passantable and not self.moved and abs(cords[1] - self.get_y()) == 120:
+        if not self.en_passantable and not self.moved:
             self.en_passantable = True
-        super(Pawn, self).move_piece(cords, screen, board)
 
     def get_legal_moves(self, board):
         potential_moves = []
@@ -54,7 +61,8 @@ class Pawn(Piece):
         holy_hell = [(self.get_x() + 60, self.get_y()), (self.get_x() - 60, self.get_y())]
         if self.color == 'w':
             takes = [(self.get_x() + 60, self.get_y() - 60), (self.get_x() - 60, self.get_y() - 60)]
-            if not board.get_at_cords((self.get_x(), self.get_y() - 60)).contains:
+            if board.get_at_cords((self.get_x(), self.get_y() - 60)) is not None and \
+                    not board.get_at_cords((self.get_x(), self.get_y() - 60)).contains:
                 potential_moves.append((self.get_x(), self.get_y() - 60))
                 if not self.moved and not board.get_at_cords((self.get_x(), self.get_y() - 120)).contains:
                     potential_moves.append((self.get_x(), self.get_y() - 120))
@@ -62,14 +70,14 @@ class Pawn(Piece):
                 if helpers.is_valid(cords) and board.get_at_cords(cords).contains \
                         and board.get_at_cords(cords).contained_piece.color != self.color:
                     potential_moves.append(cords)
-            if self.get_y() == 180:
-                for cords in holy_hell:
-                    if board.get_at_cords(cords).contains and board.get_at_cords(cords).contained_piece.points == 1 \
-                            and board.get_at_cords(cords).contained_piece.color != self.color \
-                            and not board.get_at_cords((cords[0], cords[1] - 60)).contains \
-                            and board.get_at_cords(cords).contained_piece.en_passantable:
-                        new_cords = (cords[0], cords[1] - 60)
-                        potential_moves.append(new_cords)
+            #if self.get_y() == 180:
+            #    for cords in holy_hell:
+            #        if board.get_at_cords(cords).contains and board.get_at_cords(cords).contained_piece.points == 1 \
+            #                and board.get_at_cords(cords).contained_piece.color != self.color \
+            #                and not board.get_at_cords((cords[0], cords[1] - 60)).contains \
+            #                and board.get_at_cords(cords).contained_piece.en_passantable:
+            #            new_cords = (cords[0], cords[1] - 60)
+            #            potential_moves.append(new_cords)
             for cords in potential_moves:
                 if helpers.is_valid(cords):
                     moves.append(helpers.get_algebraic(cords))
@@ -83,14 +91,14 @@ class Pawn(Piece):
                 if helpers.is_valid(cords) and board.get_at_cords(cords).contains \
                         and board.get_at_cords(cords).contained_piece.color != self.color:
                     potential_moves.append(cords)
-            if self.get_y() == 240:
-                for cords in holy_hell:
-                    if board.get_at_cords(cords).contains and board.get_at_cords(cords).contained_piece.points == 1 \
-                            and board.get_at_cords(cords).contained_piece.color != self.color \
-                            and not board.get_at_cords((cords[0], cords[1] + 60)).contains \
-                            and board.get_at_cords(cords).contained_piece.en_passantable:
-                        new_cords = (cords[0], cords[1] + 60)
-                        potential_moves.append(new_cords)
+            #if self.get_y() == 240:
+            #    for cords in holy_hell:
+            #        if board.get_at_cords(cords).contains and board.get_at_cords(cords).contained_piece.points == 1 \
+            #                and board.get_at_cords(cords).contained_piece.color != self.color \
+            #                and not board.get_at_cords((cords[0], cords[1] + 60)).contains \
+            #                and board.get_at_cords(cords).contained_piece.en_passantable:
+            #            new_cords = (cords[0], cords[1] + 60)
+            #            potential_moves.append(new_cords)
             for cords in potential_moves:
                 if helpers.is_valid(cords):
                     moves.append(helpers.get_algebraic(cords))
@@ -118,7 +126,7 @@ class Rook(Piece):
 class Queen(Piece):
     def __init__(self, ref, img, color):
         super().__init__(ref, img, color)
-        self.points = 8
+        self.points = 9
 
 
 class King(Piece):

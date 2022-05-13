@@ -11,6 +11,19 @@ for i in range(8):
         notation_arr[i][j] = (nums[j], nums[i], horizontal[j] + vertical[i])
 
 
+def check_score(board):
+    black_score = 0
+    white_score = 0
+    for col in board:
+        for item in col:
+            if item.contains:
+                if item.contained_piece.color == 'w':
+                    white_score += item.contained_piece.points
+                if item.contained_piece.color == 'b':
+                    black_score += item.contained_piece.points
+    return black_score, white_score
+
+
 def get_algebraic(cords):
     for col in notation_arr:
         for item in col:
@@ -18,8 +31,16 @@ def get_algebraic(cords):
                 return item[2]
 
 
-def show_legal_moves(moves, board):
+def cords_from_algebraic(algebraic):
+    for col in notation_arr:
+        for item in col:
+            if item[2] == algebraic:
+                return item[0], item[1]
 
+
+def show_legal_moves(moves, board, screen):
+    for alg in moves:
+        screen.blit(movable, cords_from_algebraic(alg))
 
 
 def is_valid(cords):
@@ -28,6 +49,14 @@ def is_valid(cords):
         if item > 420 or item < 0:
             value = False
     return value
+
+
+def clear_square(cords, screen, board):
+    pygame.draw.rect(screen, screen.get_at((cords[0], cords[1])),
+                     pygame.Rect(cords[0], cords[1], 60, 60))
+    if board.get_at_cords(cords).contains:
+        piece = board.get_at_cords(cords).contained_piece
+        screen.blit(piece.img, cords)
 
 
 def remove_behind_left(cords, cord_list):

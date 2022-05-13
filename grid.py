@@ -52,11 +52,6 @@ def init(screen):
     bbf = piece.Bishop(screen.blit(blackBish, (300, 0)), blackBish, 'b')
     bknb = piece.Knight(screen.blit(blackKnight, (360, 0)), blackKnight, 'b')
     bkng = piece.Knight(screen.blit(blackKnight, (60, 0)), blackKnight, 'b')
-    test = piece.Pawn(screen.blit(blackPawn, (120, 240)), blackPawn, 'b')
-    test2 = piece.Pawn(screen.blit(whitePawn, (180, 240)), whitePawn, 'w')
-    test2.en_passantable = True
-    test.moved = True
-    test2.moved = True
 
     gridArr = [[Square() for _ in range(8)] for _ in range(8)]
     for i in range(8):
@@ -97,8 +92,6 @@ def init(screen):
     gridArr[7][5].set_contains(True, wbf)
     gridArr[7][6].set_contains(True, wkng)
     gridArr[7][7].set_contains(True, wrh)
-    gridArr[4][2].set_contains(True, test)
-    gridArr[4][3].set_contains(True, test2)
 
     return gridArr
 
@@ -118,6 +111,7 @@ class Square:
     def __init__(self, x=0, y=0, cont=False, contained=None, algebraic=''):
         self.x = x
         self.y = y
+        self.cords = (x, y)
         self.contains = cont
         self.contained_piece = contained
         self.algebraic = algebraic
