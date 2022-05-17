@@ -1,4 +1,6 @@
 import pygame
+import grid
+import piece
 
 nums = [0, 60, 120, 180, 240, 300, 360, 420]
 horizontal = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -14,9 +16,9 @@ for i in range(8):
 def check_score(board):
     black_score = 0
     white_score = 0
-    for col in board:
+    for col in board.board:
         for item in col:
-            if item.contains:
+            if item.contains and not type(item.contained_piece) == piece.King:
                 if item.contained_piece.color == 'w':
                     white_score += item.contained_piece.points
                 if item.contained_piece.color == 'b':
@@ -43,10 +45,11 @@ def show_legal_moves(moves, board, screen):
         screen.blit(movable, cords_from_algebraic(alg))
 
 
-def is_valid(cords):
+def is_valid(cords, color, board):
     value = True
     for item in cords:
-        if item > 420 or item < 0:
+        if item > 420 or item < 0 or (board.get_at_cords(cords).contains and
+                                      board.get_at_cords(cords).contained_piece.color == color):
             value = False
     return value
 
@@ -55,8 +58,8 @@ def clear_square(cords, screen, board):
     pygame.draw.rect(screen, screen.get_at((cords[0], cords[1])),
                      pygame.Rect(cords[0], cords[1], 60, 60))
     if board.get_at_cords(cords).contains:
-        piece = board.get_at_cords(cords).contained_piece
-        screen.blit(piece.img, cords)
+        ref_piece = board.get_at_cords(cords).contained_piece
+        piece.ref = screen.blit(ref_piece.img, cords)
 
 
 def remove_behind_left(cords, cord_list):
