@@ -44,14 +44,14 @@ def init(screen):
     wrh = piece.Rook(screen.blit(whiteRook, (420, 420)), whiteRook, 'w')
     wbc = piece.Bishop(screen.blit(whiteBish, (120, 420)), whiteBish, 'w')
     wbf = piece.Bishop(screen.blit(whiteBish, (300, 420)), whiteBish, 'w')
-    wknb = piece.Knight(screen.blit(whiteKnight, (360, 420)), whiteKnight, 'w')
-    wkng = piece.Knight(screen.blit(whiteKnight, (60, 420)), whiteKnight, 'w')
+    wknb = piece.Knight(screen.blit(whiteKnight, (60, 420)), whiteKnight, 'w')
+    wkng = piece.Knight(screen.blit(whiteKnight, (360, 420)), whiteKnight, 'w')
     bra = piece.Rook(screen.blit(blackRook, (0, 0)), blackRook, 'b')
     brh = piece.Rook(screen.blit(blackRook, (420, 0)), blackRook, 'b')
     bbc = piece.Bishop(screen.blit(blackBish, (120, 0)), blackBish, 'b')
     bbf = piece.Bishop(screen.blit(blackBish, (300, 0)), blackBish, 'b')
-    bknb = piece.Knight(screen.blit(blackKnight, (360, 0)), blackKnight, 'b')
-    bkng = piece.Knight(screen.blit(blackKnight, (60, 0)), blackKnight, 'b')
+    bknb = piece.Knight(screen.blit(blackKnight, (60, 0)), blackKnight, 'b')
+    bkng = piece.Knight(screen.blit(blackKnight, (360, 0)), blackKnight, 'b')
 
     gridArr = [[Square() for _ in range(8)] for _ in range(8)]
     for i in range(8):

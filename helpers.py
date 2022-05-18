@@ -48,7 +48,7 @@ def show_legal_moves(moves, board, screen):
 def is_valid(cords, color, board):
     value = True
     for item in cords:
-        if item > 420 or item < 0 or (board.get_at_cords(cords).contains and
+        if item > 420 or item < 0 or (board.get_at_cords(cords) is not None and board.get_at_cords(cords).contains and
                                       board.get_at_cords(cords).contained_piece.color == color):
             value = False
     return value
