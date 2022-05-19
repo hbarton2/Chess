@@ -158,6 +158,36 @@ class Rook(Piece):
         if not self.moved:
             self.moved = True
 
+    def get_legal_moves(self, board):
+        x = x1 = x2 = self.get_x()
+        y = y1 = y2 = self.get_y()
+        potential_moves = []
+        moves = []
+        while y1 <= 360:
+            y1 += 60
+            potential_moves.append((x, y1))
+            if board.get_at_cords((x, y1)).contains:
+                break
+        while y2 >= 60:
+            y2 -= 60
+            potential_moves.append((x, y2))
+            if board.get_at_cords((x, y2)).contains:
+                break
+        while x1 <= 360:
+            x1 += 60
+            potential_moves.append((x1, y))
+            if board.get_at_cords((x1, y)).contains:
+                break
+        while x2 >= 60:
+            x2 -= 60
+            potential_moves.append((x2, y))
+            if board.get_at_cords((x2, y)).contains:
+                break
+        for cords in potential_moves:
+            if helpers.is_valid(cords, self.color, board):
+                moves.append(helpers.get_algebraic(cords))
+        return moves
+
 
 class Queen(Piece):
     def __init__(self, ref, img, color):
@@ -174,4 +204,22 @@ class King(Piece):
         super().move_piece(cords, screen, board)
         if not self.moved:
             self.moved = True
+
+    def get_legal_moves(self, board):
+        x = self.get_x()
+        y = self.get_y()
+        moves = []
+        potential_moves = [(x + 60, y), (x - 60, y), (x, y + 60), (x, y - 60),
+                           (x + 60, y + 60), (x + 60, y - 60),
+                           (x - 60, y + 60), (x - 60, y - 60)]
+        for cords in potential_moves:
+            if helpers.is_valid(cords, self.color, board):
+                moves.append(helpers.get_algebraic(cords))
+        #for col in board.board:
+        #    for item in col:
+        #        if item.contains and item.contained_piece is not None and item.contained_piece.color != self.color:
+        #            for move in item.contained_piece.get_legal_moves(board):
+        #                if move in moves:
+        #                    moves.remove(move)
+        return moves
 
