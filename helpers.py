@@ -3,6 +3,11 @@ import grid
 import piece
 
 nums = [0, 60, 120, 180, 240, 300, 360, 420]
+grey1 = [0, 120, 240, 360]
+grey2 = [60, 180, 300, 420]
+grey_squares = []
+white = 255, 255, 255
+grey = 80, 80, 80
 horizontal = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 vertical = ['8', '7', '6', '5', '4', '3', '2', '1']
 movable = pygame.image.load("Images/movable.png")
@@ -11,6 +16,11 @@ notation_arr = [[(0, 0, '') for _ in range(8)] for _ in range(8)]
 for i in range(8):
     for j in range(8):
         notation_arr[i][j] = (nums[j], nums[i], horizontal[j] + vertical[i])
+
+for i in grey1:
+    for j in grey2:
+        grey_squares.append((i, j))
+        grey_squares.append((j, i))
 
 
 def check_score(board):
@@ -55,32 +65,46 @@ def is_valid(cords, color, board):
 
 
 def clear_square(cords, screen, board):
-    pygame.draw.rect(screen, screen.get_at((cords[0], cords[1])),
-                     pygame.Rect(cords[0], cords[1], 60, 60))
+    color = white
+    if cords in grey_squares:
+        color = grey
+    pygame.draw.rect(screen, color, pygame.Rect(cords[0], cords[1], 60, 60))
     if board.get_at_cords(cords).contains:
         ref_piece = board.get_at_cords(cords).contained_piece
         piece.ref = screen.blit(ref_piece.img, cords)
 
 
-def remove_behind_left(cords, cord_list):
-    for item in cord_list:
-        if item[0] < cords[0] and item[1] == cords[1]:
-            cord_list.remove(item)
-
-
-def remove_behind_right(cords, cord_list):
-    for item in cord_list:
-        if item[0] > cords[0] and item[1] == cords[1]:
-            cord_list.remove(item)
-
-
-def remove_behind_down(cords, cord_list):
-    for item in cord_list:
-        if item[1] > cords[1] and item[0] == cords[0]:
-            cord_list.remove(item)
-
-
-def remove_behind_up(cords, cord_list):
-    for item in cord_list:
-        if item[1] < cords[1] and item[0] == cords[0]:
-            cord_list.remove(item)
+def between(cords, p1, p2):
+    ret = False
+    x = cords[0]
+    y = cords[1]
+    x1 = x3 = p1.get_x()
+    y1 = y3 = p1.get_y()
+    x2 = x4 = p2.get_x()
+    y2 = y4 = p2.get_y()
+    between_diagonal = []
+    if x1 < x2 and y1 < y2:
+        while x3 < x4 and y3 < y4:
+            x3 += 60
+            y3 += 60
+            between_diagonal.append((x3, y3))
+    elif x1 > x2 and y1 > y2:
+        while x3 > x4 and y3 > y4:
+            x4 += 60
+            y4 += 60
+            between_diagonal.append((x4, y4))
+    elif y1 < y2 and x1 > x2:
+        while y3 < y4 and x3 > x4:
+            y3 += 60
+            x4 += 60
+            between_diagonal.append((x4, y3))
+    elif y1 > y2 and x1 < x2:
+        while y3 > y4 and x3 < x4:
+            y4 += 60
+            x3 += 60
+            between_diagonal.append((x3, y4))
+    if (x == x1 == x2 and (y1 < y < y2 or y1 > y > y2)) or \
+            (y == y1 == y2 and (x1 < x < x2 or x1 > x > x2)) or \
+            cords in between_diagonal:
+        ret = True
+    return ret

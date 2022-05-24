@@ -16,7 +16,7 @@ class Piece:
         return self.ref.y
 
     def get_cords(self):
-        return self.ref.x, self.ref.y
+        return self.get_x(), self.get_y()
 
     def move_piece(self, cords, screen, board):
         old = board.get_at_cords(self.get_cords())
@@ -79,6 +79,7 @@ class Pawn(Piece):
     def get_legal_moves(self, board):
         potential_moves = []
         moves = []
+        # holy_hell is potential moves for en passant (the name is a meme)
         holy_hell = [(self.get_x() + 60, self.get_y()), (self.get_x() - 60, self.get_y())]
         if self.color == 'w':
             takes = [(self.get_x() + 60, self.get_y() - 60), (self.get_x() - 60, self.get_y() - 60)]
@@ -94,7 +95,7 @@ class Pawn(Piece):
             if self.get_y() == 180:
                 for cords in holy_hell:
                     if board.get_at_cords(cords).contains \
-                            and type(board.get_at_cords(cords).contained_piece) == Pawn\
+                            and type(board.get_at_cords(cords).contained_piece) == Pawn \
                             and board.get_at_cords(cords).contained_piece.color != self.color \
                             and not board.get_at_cords((cords[0], cords[1] - 60)).contains \
                             and board.get_at_cords(cords).contained_piece.en_passantable:
@@ -128,6 +129,40 @@ class Bishop(Piece):
     def __init__(self, ref, img, color):
         super().__init__(ref, img, color)
         self.points = 3
+
+    def get_legal_moves(self, board):
+        x = x1 = x2 = x3 = self.get_x()
+        y = y1 = y2 = y3 = self.get_y()
+        potential_moves = []
+        moves = []
+        while x < 420 and y < 420:
+            x += 60
+            y += 60
+            potential_moves.append((x, y))
+            if board.get_at_cords((x, y)).contains:
+                break
+        while x1 < 420 and y1 > 0:
+            x1 += 60
+            y1 -= 60
+            potential_moves.append((x1, y1))
+            if board.get_at_cords((x1, y1)).contains:
+                break
+        while x2 > 0 and y2 < 420:
+            x2 -= 60
+            y2 += 60
+            potential_moves.append((x2, y2))
+            if board.get_at_cords((x2, y2)).contains:
+                break
+        while x3 > 0 and y3 > 0:
+            x3 -= 60
+            y3 -= 60
+            potential_moves.append((x3, y3))
+            if board.get_at_cords((x3, y3)).contains:
+                break
+        for cords in potential_moves:
+            if helpers.is_valid(cords, self.color, board):
+                moves.append(helpers.get_algebraic(cords))
+        return moves
 
 
 class Knight(Piece):
@@ -163,6 +198,7 @@ class Rook(Piece):
         y = y1 = y2 = self.get_y()
         potential_moves = []
         moves = []
+        # Best way I could find to make sure moves past a piece aren't being used
         while y1 <= 360:
             y1 += 60
             potential_moves.append((x, y1))
@@ -194,6 +230,15 @@ class Queen(Piece):
         super().__init__(ref, img, color)
         self.points = 9
 
+    # Queen uses Bishop and Rook moves to get its own (nice time saver)
+    def get_legal_moves(self, board):
+        moves = []
+        for cords in Bishop.get_legal_moves(self, board):
+            moves.append(cords)
+        for cords in Rook.get_legal_moves(self, board):
+            moves.append(cords)
+        return moves
+
 
 class King(Piece):
     def __init__(self, ref, img, color):
@@ -212,14 +257,39 @@ class King(Piece):
         potential_moves = [(x + 60, y), (x - 60, y), (x, y + 60), (x, y - 60),
                            (x + 60, y + 60), (x + 60, y - 60),
                            (x - 60, y + 60), (x - 60, y - 60)]
+        cant_moves = []
         for cords in potential_moves:
             if helpers.is_valid(cords, self.color, board):
                 moves.append(helpers.get_algebraic(cords))
-        #for col in board.board:
-        #    for item in col:
-        #        if item.contains and item.contained_piece is not None and item.contained_piece.color != self.color:
-        #            for move in item.contained_piece.get_legal_moves(board):
-        #                if move in moves:
-        #                    moves.remove(move)
+        for col in board.board:
+            for item in col:
+                if item.contains and item.contained_piece is not None and item.contained_piece.color != self.color:
+                    if type(item.contained_piece) == Queen or type(item.contained_piece) == Knight:
+                        cant_moves.append(item.contained_piece.get_legal_moves(board))
+                    if type(item.contained_piece) == Rook and (item.x in range(self.get_x() - 60, self.get_x() + 60) or
+                                                               item.y in range(self.get_y() - 60, self.get_x() + 60)):
+                        cant_moves.append(item.contained_piece.get_legal_moves(board))
+                    if type(item.contained_piece) == Bishop and (item.x > self.get_x() + 120
+                                                                 or item.contained_piece.get_x() < self.get_x() - 120
+                                                                 or item.y > self.get_y() + 120
+                                                                 or item.y < self.get_y() - 120):
+                        cant_moves.append(item.contained_piece.get_legal_moves(board))
+                    if type(item.contained_piece) == Pawn and item.x in range(self.get_x() - 60, self.get_x() + 60):
+                        if self.color == 'w' and self.get_y() - 180 < item.y < self.get_y():
+                            cant_moves.append(item.contained_piece.get_legal_moves(board))
+                        if self.color == 'b' and self.get_y() + 180 > item.y > self.get_y():
+                            cant_moves.append(item.contained_piece.get_legal_moves(board))
+                    if type(item.contained_piece) == King:
+                        x = item.x
+                        y = item.y
+                        potential_moves2 = [(x + 60, y), (x - 60, y), (x, y + 60), (x, y - 60),
+                                            (x + 60, y + 60), (x + 60, y - 60),
+                                            (x - 60, y + 60), (x - 60, y - 60)]
+                        for cords in potential_moves2:
+                            if helpers.get_algebraic(cords) in moves:
+                                moves.remove(helpers.get_algebraic(cords))
+                    for move in moves:
+                        for move_list in cant_moves:
+                            if move in move_list:
+                                moves.remove(move)
         return moves
-

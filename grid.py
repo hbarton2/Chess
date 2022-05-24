@@ -106,6 +106,18 @@ class Board:
                 if cords[0] in range(item.x, item.x + 60) and cords[1] in range(item.y, item.y + 60):
                     return item
 
+    def get(self, color, target_piece):
+        pieces = []
+        for col in self.board:
+            for item in col:
+                if item.contains and item.contained_piece.color == color \
+                        and type(item.contained_piece) == target_piece:
+                    pieces.append(item.contained_piece)
+        if len(pieces) == 1:
+            return pieces[0]
+        else:
+            return pieces
+
 
 class Square:
     def __init__(self, x=0, y=0, cont=False, contained=None, algebraic=''):
