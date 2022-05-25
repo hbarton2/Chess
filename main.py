@@ -92,6 +92,40 @@ while 1:
                                         or move == helpers.get_algebraic(item.get_cords()):
                                     temp_moves.append(move)
                         moves = temp_moves
+                    king_cords = board.get(turn, piece.King).get_cords()
+                    square_clicked.contains = False
+                    temp_piece = square_clicked.contained_piece
+                    temp_moves = []
+                    for move in moves:
+                        empty_square = False
+                        restore_square = False
+                        old_piece = None
+                        check_square = board.get_at_cords(helpers.cords_from_algebraic(move))
+                        if not check_square.contains:
+                            empty_square = True
+                            check_square.contains = True
+                        else:
+                            restore_square = True
+                            old_piece = check_square.contained_piece
+                        check_square.contained_piece = temp_piece
+                        for col in board.board:
+                            for item in col:
+                                if item.contains and item.contained_piece.color != turn and move not in temp_moves and \
+                                        (type(item.contained_piece) == piece.Queen
+                                         or type(item.contained_piece) == piece.Rook
+                                         or type(item.contained_piece) == piece.Bishop):
+                                    if helpers.get_algebraic(king_cords) in item.contained_piece.get_legal_moves(board):
+                                        temp_moves.append(move)
+                        if empty_square:
+                            check_square.contains = False
+                            check_square.contained_piece = None
+                        if restore_square:
+                            check_square.contained_piece = old_piece
+                    if temp_moves:
+                        for i in temp_moves:
+                            if i in moves:
+                                moves.remove(i)
+                    square_clicked.contains = True
                     if moves:
                         helpers.show_legal_moves(moves, board, screen)
                         moves_shown = True
