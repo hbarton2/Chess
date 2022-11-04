@@ -24,8 +24,7 @@ class Piece:
         old.contained_piece = None
         pygame.draw.rect(screen, screen.get_at((cords[0], cords[1])), pygame.Rect(cords[0], cords[1], 60, 60))
         temp = screen.blit(self.img, cords)
-        pygame.draw.rect(screen, screen.get_at((self.ref.x, self.ref.y)),
-                         pygame.Rect(self.ref.x, self.ref.y, 60, 60))
+        helpers.clear_square((self.get_x(), self.get_y()), screen, board)
         self.ref = temp
         pygame.display.flip()
         square = board.get_at_cords(cords)
@@ -246,17 +245,25 @@ class King(Piece):
         self.moved = False
 
     def move_piece(self, cords, screen, board):
-        super().move_piece(cords, screen, board)
         if not self.moved:
             self.moved = True
+        if cords[0] > self.get_x() + 60:
+            board.get_at_cords((420, self.get_y())).contained_piece.move_piece((self.get_x() + 60, self.get_y()), screen, board)
+        if cords[0] < self.get_x() - 60:
+            board.get_at_cords((0, self.get_y())).contained_piece.move_piece((self.get_x() - 60, self.get_y()), screen, board)
+        super().move_piece(cords, screen, board)
+
+    def get_potential_moves(self):
+        x = self.get_x()
+        y = self.get_y()
+        return [(x + 60, y), (x - 60, y), (x, y + 60), (x, y - 60), (x + 60, y + 60), (x + 60, y - 60),
+                (x - 60, y + 60), (x - 60, y - 60)]
 
     def get_legal_moves(self, board):
         x = self.get_x()
         y = self.get_y()
         moves = []
-        potential_moves = [(x + 60, y), (x - 60, y), (x, y + 60), (x, y - 60),
-                           (x + 60, y + 60), (x + 60, y - 60),
-                           (x - 60, y + 60), (x - 60, y - 60)]
+        potential_moves = self.get_potential_moves()
         cant_moves = []
         for cords in potential_moves:
             if helpers.is_valid(cords, self.color, board):
@@ -282,14 +289,17 @@ class King(Piece):
                     if type(item.contained_piece) == King:
                         x = item.x
                         y = item.y
-                        potential_moves2 = [(x + 60, y), (x - 60, y), (x, y + 60), (x, y - 60),
-                                            (x + 60, y + 60), (x + 60, y - 60),
-                                            (x - 60, y + 60), (x - 60, y - 60)]
-                        for cords in potential_moves2:
+                        for cords in item.contained_piece.get_potential_moves():
                             if helpers.get_algebraic(cords) in moves:
                                 moves.remove(helpers.get_algebraic(cords))
                     for move in moves:
                         for move_list in cant_moves:
                             if move in move_list:
                                 moves.remove(move)
+                for piece in board.get(self.color, Rook):
+                    if not self.moved and not piece.moved:
+                        if piece.get_x() > self.get_x() and helpers.get_algebraic((x + 60, y)) in moves:
+                            moves.append(helpers.get_algebraic((x + 120, y)))
+                        if piece.get_x() < self.get_x() and helpers.get_algebraic((x - 60, y)) in moves:
+                            moves.append(helpers.get_algebraic((x - 120, y)))
         return moves

@@ -90,19 +90,19 @@ def between(cords, p1, p2):
             between_diagonal.append((x3, y3))
     elif x1 > x2 and y1 > y2:
         while x3 > x4 and y3 > y4:
-            x4 += 60
-            y4 += 60
-            between_diagonal.append((x4, y4))
+            x3 -= 60
+            y3 -= 60
+            between_diagonal.append((x3, y3))
     elif y1 < y2 and x1 > x2:
         while y3 < y4 and x3 > x4:
             y3 += 60
-            x4 += 60
-            between_diagonal.append((x4, y3))
+            x3 -= 60
+            between_diagonal.append((x3, y3))
     elif y1 > y2 and x1 < x2:
         while y3 > y4 and x3 < x4:
-            y4 += 60
+            y3 -= 60
             x3 += 60
-            between_diagonal.append((x3, y4))
+            between_diagonal.append((x3, y3))
     if (x == x1 == x2 and (y1 < y < y2 or y1 > y > y2)) or \
             (y == y1 == y2 and (x1 < x < x2 or x1 > x > x2)) or \
             cords in between_diagonal:

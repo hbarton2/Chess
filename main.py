@@ -87,8 +87,8 @@ while 1:
                     if check and type(piece_to_move) != piece.King:
                         for item in checking_pieces:
                             for move in moves:
-                                if move in moves and (helpers.between(helpers.cords_from_algebraic(move),
-                                                                      item, board.get(turn, piece.King))) \
+                                if (helpers.between(helpers.cords_from_algebraic(move),
+                                                    item, board.get(turn, piece.King))) \
                                         or move == helpers.get_algebraic(item.get_cords()):
                                     temp_moves.append(move)
                         moves = temp_moves
